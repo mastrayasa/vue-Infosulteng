@@ -1,0 +1,17 @@
+{
+  "name": "Belajar Vue",
+  "version": "1.0.0", 
+  "dependencies": {
+    "moment": "^2.14.1",
+    "semantic-ui": "^2.2.2",
+	"bootstrap" : "^3.0.0",
+    "vue": "^1.0.27",
+    "vue-resource": "^0.9.3",
+    "vue-router": "^0.7.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mastrayasa"
+}

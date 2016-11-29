@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Infosulteng</title>
+    <link rel="stylesheet" href="node_modules/semantic-ui/dist/semantic.min.css">
+    <style>
+	body{
+		padding-top:20px;
+	}
+    </style>
+</head>
+
+<body>
+			
+<div id="app"> 
+	<div class="ui container">
+		<div class="ui pointing menu"> 
+			<a v-link="{path: '/'}" class="item">Home</a>
+			<a v-link="{path: '/terbaru'}" class="item">Terbaru</a>
+			<a v-link="{path: '/loker'}" class="item">Lowongan Pekerjaan</a>
+			<a v-link="{path: '/event'}" class="item">Event</a> 
+			<a v-link="{path: '/user'}" v-if="is_login" class="item">Users</a> 
+			<a v-if="is_login" @click="logout()" class="item">Logout</a> 
+			<a v-link="{path: '/login'}" v-if="!is_login" class="item">Login</a> 
+			 
+			 
+			<div class="right menu">
+				<div class="item">
+					<div class="ui transparent icon input">
+						<input type="text" placeholder="Search...">
+						<i class="search link icon"></i>
+					</div>
+				</div>
+			</div>
+			
+		</div>
+		
+		<router-view></router-view>
+		
+		 
+		<script id="el_event" type="text/html">
+			<h2 class="ui dividing header">Agenda terbaru</h2>  
+			<div class="ui items">
+			  <div class="item" v-for="item in events">
+				<div class="ui small image">
+					<img v-bind:src="getImage(item.gambar)" alt="{{ item.title}}" /> 
+				</div>
+				<div class="content">
+				  <div class="header">{{ item.title}}</div>
+				  <div class="meta">
+					<span class="price">{{ item.cat.title}}</span> - 
+					<span class="stay">{{ tanggalCantik(item.publish_at) }}</span>
+				  </div>
+				  <div class="description">
+					{{ item.lokasi }}
+					{{{ item.singkat }}} 
+				  </div>
+				</div>
+			  </div>
+			  
+			  <template v-if="!noMoreData">
+					<button v-if="!isLoading" class="btn btn-default" v-on:click="loadNext()">Selanjutnya</button>
+					<span v-if="isLoading">
+						<i class="fa fa-refresh fa-spin fa-3x fa-fw" aria-hidden="true"></i>
+						<span class="sr-only">Mohon Tunggu</span>
+					</span>
+				</template> 
+
+				<div v-if="noData" class="alert alert-warning">
+					<p>Data tidak ditemukan</p>
+				</div>
+			  
+			</div>
+		</script>
+		
+		<script id="el_loker" type="text/html">
+			<h2 class="ui dividing header">Lowongan Pekerjaan</h2>  
+			<div class="ui items">
+			  <div class="item" v-for="item in lokers">
+				<div class="ui small image">
+					<img v-bind:src="getImage(item.image)" alt="{{ item.title}}" />
+				</div>
+				<div class="content">
+				  <div class="header">
+				  <a v-link="{name: 'singleLoker', params: {lokerName : item.name }}" class="header">{{ item.title }}</a>
+				  
+				  </div>
+				  <div class="meta">
+					<span class="price">{{ item.cat_title}}</span> - 
+					<span class="stay">{{ tanggalCantik(item.publish_at) }}</span>
+				  </div>
+				  <div class="description">
+					{{{ item.keterangan }}} 
+				  </div>
+				</div>
+			  </div>
+			  
+				<template v-if="!noMoreData">
+					<button v-if="!isLoading" class="btn btn-default" v-on:click="loadNext()">Selanjutnya</button>
+					<span v-if="isLoading">
+						<i class="fa fa-refresh fa-spin fa-3x fa-fw" aria-hidden="true"></i>
+						<span class="sr-only">Mohon Tunggu</span>
+					</span>
+				</template> 
+
+				<div v-if="noData" class="alert alert-warning">
+					<p>Data tidak ditemukan</p>
+				</div>
+			  
+			</div>
+		</script>
+		
+		
+		<script id="el_dirList" type="html/text">
+		<div class="ui grid"> 
+			<div class="ten wide column"> 
+				<h2 class="ui dividing header">{{ headTitle}}</h2>  
+				<div class="ui relaxed divided items">
+					<div class="item" v-for="item in dir">
+					  <div class="ui small image">
+							<img v-bind:src="getImage(item.image)" alt="{{ item.title }}" />
+					  </div>
+					  <div class="content">
+						<a v-link="{name: 'singleDir', params: {dirName : item.name }}" class="header">{{ item.title }}</a>
+						<div class="meta"> 
+						  <a>{{ item.cat.title }}</a>
+						  <a>{{ tanggalCantik(item.publish_time) }}</a>
+						</div>
+						<div class="description">
+							{{ item.alamat }}
+						</div> 
+					  </div>
+					</div>
+					
+					 
+					<template v-if="!noMoreData">
+						<button v-if="!isLoading" class="btn btn-default" v-on:click="loadNext()">Selanjutnya</button>
+						<span v-if="isLoading">
+							<i class="fa fa-refresh fa-spin fa-3x fa-fw" aria-hidden="true"></i>
+							<span class="sr-only">Mohon Tunggu</span>
+						</span>
+					</template> 
+	
+					<div v-if="noData" class="alert alert-warning">
+						<p>Data tidak ditemukan</p>
+					</div> 
+					 
+					
+					
+				</div> 
+			</div> 
+		</div>
+		</script>
+		
+		<script id="el_home" type="html/text">
+		<div class="ui grid"> 
+			<div class="ten wide column"> 
+				<h2 class="ui dividing header">Kategori</h2>  
+				<div class="ui relaxed divided items">
+					<div class="item" v-for="item in dir">
+					  <div class="ui small image">
+							<img v-bind:src="getImage(item.name)"  alt="{{ item.title }}">
+					  </div> 
+					  <div class="content">
+						<a v-link="{name: 'category', params: {catName : item.name }}" class="header">{{ item.title }}</a> 
+						<div class="description">
+							<p v-if="!item.readMore">
+							  {{ item.des.substr(0,200) + "..." }} <a v-on:click="openReadMore($index)"> Baca Selengkapnya</a>
+							</p>
+							<p v-if="item.readMore">
+							  {{ item.des }}
+							</p>
+						</div> 
+					  </div>
+					</div>
+				</div> 
+			</div> 
+		</div>
+		</script>
+		
+		
+		<script id="el_login" type="html/text">
+		<div class="ui grid" v-if="!is_login"> 
+			<div class="ten wide column"> 
+				<h2 class="ui dividing header">Login</h2>  
+				 
+				 <form action="" class="ui form" @submit.prevent="logIn">
+				  <div class="field">
+					<input type="text" v-model="email" placeholder="email">
+				  </div>
+				  <div class="field">
+					<input type="password" v-model="password" placeholder="password">
+				  </div>
+				  <div class="field">
+					<button class="ui button">Login</button>
+				  </div>
+				</form>  
+			</div> 
+		</div>
+		</script>
+		
+		<script id="el_userprofile" type="html/text">
+		<div class="ui grid"> 
+			<div class="ten wide column"> 
+				<h2 class="ui dividing header">{{user.nama}}</h2>  
+				 
+				 <form action="" class="ui form" @submit.prevent="logIn">
+				  <div class="field">
+					<input type="text" v-model="email" placeholder="email">
+				  </div>
+				  <div class="field">
+					<input type="password" v-model="password" placeholder="password">
+				  </div>
+				  <div class="field">
+					<button class="ui button">Login</button>
+				  </div>
+				</form>  
+			</div> 
+		</div>
+		</script>
+		
+		<script id="el_singleLoker" type="html/text">
+		<div class="ui grid"> 
+			<div class="ten wide column"> 
+				<img width="400" v-bind:src="item.image" alt="{{ item.title }}" />
+				<h2 class="ui dividing header">{{ item.title }}</h2>  
+				
+				Gaji : {{ item.gaji }}
+				
+				<br />
+				
+				Hits : {{ item.hits }}
+				
+				<br />
+				
+				{{ tanggalCantik(item.publish_at) }}
+				<img width="16" v-bind:src="item.user_foto" alt="{{ item.user_nama }}" /> {{ item.user_nama }} 
+				 
+				 
+				<h2>Deskripsi Pekerjaan</h2>
+				{{{ item.des_pekerjaan }}}
+				
+				<h2>Kualifikasi</h2>
+				{{{ item.kualifikasi }}}
+				
+				<h2>Fasilitas</h2>
+				{{{ item.fasilitas }}}
+				
+				<h2>Keterangan</h2>
+				{{{ item.keterangan }}}
+					
+				
+				 
+				
+				
+			</div> 
+		</div>
+		</script>
+		
+		
+		<script id="el_singleDir" type="html/text">
+		<div class="ui grid"> 
+			<div class="ten wide column"> 
+				<img width="400" v-bind:src="item.image" alt="{{ item.title }}" />
+				<h2 class="ui dividing header">{{ item.title }}</h2>  
+				
+				Kontak : {{ item.options.contact }}
+				<br />
+				Alamat : {{ item.options.alamat }}
+				<br />
+				{{ tanggalCantik(item.publish_time) }} -
+				<img width="16" v-bind:src="getUserFoto(item.user.foto)" alt="{{ item.user.nama }}" /> {{ item.user.nama }} - 
+				<a v-link="{name: 'category', params: {catName : item.cat.name }}">{{ item.cat.title }}</a>
+				
+				 
+				
+				<p v-if="!readMore">
+				  {{{ item.des.substr(0,200) + "..." }}} <a v-on:click="openReadMore()"> Baca Selengkapnya</a>
+				</p>
+				<p v-if="readMore">
+				  {{{ item.des }}}
+				</p>
+				
+				<h2>Galeri</h2>
+				<img v-for="media in item.media" width="100" v-bind:src="media.url" alt="{{ item.title }}" />
+				
+				<div v-if="punyaRoom(item.options)">
+					<h2>ROOM</h2>
+					<div v-for="room in item.options.room" >
+						<b>{{ room.type }}</b>
+						{{ room.price }}
+						<br />
+						{{ room.ket }}
+						<br />
+						<small>{{ room.item }}</small>
+						<hr />
+					</div>
+				</div>
+				
+				<div v-if="punyaFeature(item.options)">
+					<h2>Fitur Lainnya</h2>
+					<div v-for="feature in item.options.feature" >
+						<b>{{ feature.name }}</b> 
+						<br />
+						<small>{{ feature.item }}</small>
+						<hr />
+					</div>
+				</div>
+				
+				
+				<h2>Komentar</h2>
+				<div v-for="review in item.review" >
+					<hr />
+					Oleh : <img width="16" v-bind:src="getUserFoto(review.foto)" alt="{{ review.nama }}" />  {{ review.nama }}
+					<br />
+					Pada : {{ tanggalCantik(review.tanggal) }} 
+					<br />
+					Rating : {{ review.rating }}
+					<br />
+					<b>{{ review.review_title }}</b>  
+					<div>
+						{{{ review.isi }}}
+					</div> 
+				</dir>
+					
+				
+			</div> 
+		</div>
+		</script>
+		 
+		 
+		 
+	</div>
+</div>
+
+
+<script src="node_modules/jquery/dist/jquery.min.js"></script>
+<script src="node_modules/semantic-ui/dist/semantic.min.js"></script>
+<script src="node_modules/moment/moment.js"></script>
+<script src="node_modules/vue/dist/vue.js"></script>
+<script src="node_modules/vue-resource/dist/vue-resource.js"></script>
+<script src="node_modules/vue-router/dist/vue-router.min.js"></script>
+<script src="node_modules/vue-lazyload-img/dist/vue.lazyimg.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
